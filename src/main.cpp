@@ -1,9 +1,11 @@
+#include "Adafruit_VL53L0X.h"
 #include "Controls.cc"
 #include "Display.cc"
 #include "Streaming.h"
 
 Controls controls	 = Controls();
 Display display		 = Display();
+Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 
 /**
  * Declarations
@@ -15,13 +17,19 @@ void button_callback(FJBUTTON* buttons, uint8_t count);
  * Declarations
  */
 void setup() {
-	Serial.begin(115200);
+	// Serial.begin(115200);
 	display.begin();
 	controls.begin().register_button_callback(button_callback).register_joystick_callback(joystick_callback);
+
+	if (!lox.begin()) {
+        display.clear().println1("Failed to boot VL53L0X").update();
+		while (1)
+			;
+	}
 }
 
 void loop() {
-	controls.update();
+	// controls.update();
 	// display.invert(stepper.isRunning())
 	//   .clear()
 	//   .println1("Curr ")
