@@ -1,11 +1,11 @@
-#include "Adafruit_VL53L0X.h"
 #include "Controls.cc"
 #include "Display.cc"
 #include "Streaming.h"
+#include <VL53L0X.h>
 
-Controls controls	 = Controls();
-Display display		 = Display();
-Adafruit_VL53L0X lox = Adafruit_VL53L0X();
+Controls controls = Controls();
+Display display	  = Display();
+VL53L0X tof;
 
 /**
  * Declarations
@@ -17,31 +17,25 @@ void button_callback(FJBUTTON* buttons, uint8_t count);
  * Declarations
  */
 void setup() {
-	// Serial.begin(115200);
+	Serial.begin(115200);
 	display.begin();
-	controls.begin().register_button_callback(button_callback).register_joystick_callback(joystick_callback);
+    display.clear();
+	// controls.begin().register_button_callback(button_callback).register_joystick_callback(joystick_callback);
 
-	if (!lox.begin()) {
-        display.clear().println1("Failed to boot VL53L0X").update();
-		while (1)
-			;
-	}
+	tof.setTimeout(500);
+	tof.init();
+	tof.startContinuous();
 }
 
 void loop() {
-	// controls.update();
-	// display.invert(stepper.isRunning())
-	//   .clear()
-	//   .println1("Curr ")
-	//   .println1(stepper.currentPosition())
-	//   .println1(", Targ ")
-	//   .println1(stepper.targetPosition())
-	//   .println2(stepper.speed())
-	//   .println2(" s/s ")
-	//   .println2(stepper_accel)
-	//   .println2(" s/s/s ")
-	//   .println3(!digitalRead(STEPPER_EN_PIN) ? "Enabled" : "Disabled")
-	//   .update();
+    display
+        .clearln1()
+        .println1(tof.readRangeContinuousMillimeters())
+        .update();
+
+	if (tof.timeoutOccurred()) {
+        display.clearln2().println2("Timed out");
+    }
 }
 
 void left_button_pressed() {
